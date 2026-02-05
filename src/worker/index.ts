@@ -5,6 +5,12 @@ const app = new Hono<{ Bindings: Env }>();
 
 app.use('/api/*', cors())
 
+app.get("/api/config", (c) => {
+    return c.json({
+        siteKey: c.env.TURNSTILE_SITE_KEY
+    });
+});
+
 app.get("/api/", (c) => {
     return c.json({ status: "ok", service: "URL Shortener API" });
 });

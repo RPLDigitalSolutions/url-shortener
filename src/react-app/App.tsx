@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ShortenerCard from './components/ShortenerCard';
 import HistoryList, { HistoryItem } from './components/HistoryList';
 import useLocalStorage from './hooks/useLocalStorage';
@@ -8,9 +8,17 @@ function App() {
 	const [history, setHistory] = useLocalStorage<HistoryItem[]>('url-history', []);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [turnstileSiteKey, setTurnstileSiteKey] = useState<string>("");
 
-	// Use empty string fallback to prevent crash if env unchecked (though we have defaults)
-	const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
+	// Fetch Config from Worker (Cloudflare Env Var)
+	useEffect(() => {
+		fetch("/api/config")
+			.then(res => res.json())
+			.then((data: any) => {
+				if (data.siteKey) setTurnstileSiteKey(data.siteKey);
+			})
+			.catch(err => console.error("Failed to load config:", err));
+	}, []);
 
 	const handleShorten = async (url: string, customCode: string, turnstileToken: string) => {
 		try {
