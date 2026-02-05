@@ -65,6 +65,30 @@ app.post("/api/shorten", async (c) => {
     }
 });
 
+// Bulk Stats Endpoint
+app.post("/api/stats", async (c) => {
+    const { slugs } = await c.req.json<{ slugs: string[] }>();
+
+    if (!slugs || !Array.isArray(slugs) || slugs.length === 0) {
+        return c.json({ stats: [] });
+    }
+
+    // Construct placeholders: ?,?,?
+    const placeholders = slugs.map(() => '?').join(',');
+    const query = `SELECT short_code, clicks FROM urls WHERE short_code IN (${placeholders})`;
+
+    try {
+        const { results } = await c.env.D1.prepare(query)
+            .bind(...slugs)
+            .all<{ short_code: string, clicks: number }>();
+
+        return c.json({ stats: results || [] });
+    } catch (e) {
+        console.error(e);
+        return c.json({ error: "Failed to fetch stats" }, 500);
+    }
+});
+
 // Redirect Endpoint
 app.get("/:slug", async (c) => {
     const slug = c.req.param("slug");
