@@ -1,0 +1,74 @@
+:root {
+  /* Skin Tone - Shadowed */
+  --accent-primary: #78493A;
+  
+  /* Charcoal Suit */
+  --bg-card: #2F2A27;
+  
+  /* Off-White Shirt */
+  --text-primary: #987F7B;
+  
+  /* Silver/Grey Stripe */
+  --text-secondary: #87797A;
+  
+  /* Dark Stripe */
+  --accent-dark: #1E1B1A;
+  
+  /* Chair Brown */
+  --bg-accent: #382619;
+  
+  /* Deep Shadow */
+  --bg-main: #020200;
+  
+  /* Ashtray/Studs */
+  --accent-metallic: #5D4B39;
+
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+input {
+  font-family: inherit;
+  outline: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-card);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
