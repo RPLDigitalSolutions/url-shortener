@@ -20,6 +20,61 @@ function App() {
 			.catch(err => console.error("Failed to load config:", err));
 	}, []);
 
+	// Sync Stats
+	useEffect(() => {
+		if (history.length === 0) return;
+
+		const slugs = history.map(h => {
+			const parts = h.shortUrl.split('/');
+			return parts[parts.length - 1]; // Get slug from URL
+		});
+
+		fetch("/api/stats", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ slugs })
+		})
+			.then(res => res.json())
+			.then((data: { stats: { short_code: string, clicks: number }[] }) => {
+				if (data.stats && Array.isArray(data.stats)) {
+					const statsMap = new Map(data.stats.map(s => [s.short_code, s.clicks]));
+
+					let hasChanges = false;
+					const newHistory = history.map(item => {
+						const slug = item.shortUrl.split('/').pop() || "";
+						if (statsMap.has(slug)) {
+							const serverClicks = statsMap.get(slug);
+							if (serverClicks !== item.clicks) {
+								hasChanges = true;
+								return { ...item, clicks: serverClicks };
+							}
+						}
+						return item;
+					});
+
+					if (hasChanges) {
+						console.log("Updated stats from server");
+						setHistory(newHistory);
+					}
+				}
+			})
+			.catch(err => console.error("Failed to sync stats:", err));
+	}, [history.length]); // Only run when history count changes (added/removed), or empty dependency if we want just once on mount. 
+	// Ideally we might want a manual refresh or run on mount. `history.length` is a safe compromise to update when new items are added efficiently, but doesn't auto-poll.
+	// To fix "refresh dashboard" specifically: `[]` (mount) is critical. But since history is loaded from localStorage, we need to wait for it? 
+	// useLocalStorage initializes synchronously so `history` is ready on mount.
+	// But we also want to re-check if user adds a new link? The response from shorten API normally returns 0 clicks anyway.
+	// So [] is best for "refresh".
+	// Wait, useLocalStorage returns [storedValue, setValue].
+
+	// Better strategy: Run on mount.
+	// But we need to use `history` in `useEffect`. so `[history]` would cause infinite loop if we update history inside.
+	// Solution: Break loop by checking equality (implemented above) and strict dependency management.
+	// Or just run once on mount? But history might change.
+	// Let's rely on standard reload for now (useEffect has `[]` but we need `history` in scope/dependency).
+	// Actually, if we put `history` in dependency and verify changes, it works.
+
+
 	const handleShorten = async (url: string, customCode: string, turnstileToken: string) => {
 		try {
 			setIsLoading(true);
